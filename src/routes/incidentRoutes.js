@@ -3,6 +3,19 @@ const router = express.Router();
 const IncidentController = require('../controllers/incidentController');
 const auth = require('../middleware/auth');
 const { body } = require('express-validator');
+const multer = require('multer');
+
+// Configure multer storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Validation middleware
 const validateIncident = [
@@ -15,7 +28,7 @@ const validateIncident = [
 ];
 
 // Routes
-router.post('/', auth, validateIncident, IncidentController.createIncident);
+router.post('/', auth, upload.single('image'), validateIncident, IncidentController.createIncident);
 router.get('/nearby', auth, IncidentController.getNearbyIncidents);
 router.get('/', auth, IncidentController.getAllIncidents);
 router.get('/:id', auth, IncidentController.getIncidentById);
